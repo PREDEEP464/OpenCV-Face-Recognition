@@ -14,7 +14,8 @@ def main():
     faces, labels, names = prepare_training_data()
 
     if faces is not None and labels is not None and names is not None:
-        print("\n🧠 Training the face recognizer...")
+        print("=" * 50)
+        print("🧠 Training the face recognizer...")
         
         # Create and train recognizer
         face_recognizer = create_recognizer()
@@ -22,7 +23,8 @@ def main():
         
         print("✅ Training completed successfully!")
         print(f"👥 Trained on {len(names)} people: {', '.join(names)}")
-        print("\n🎥 Initializing camera system...")
+        print("=" * 50)
+        print("🎥 Initializing camera system...")
         
         # Initialize video capture with better settings
         video_capture = cv2.VideoCapture(0)
@@ -34,6 +36,7 @@ def main():
         ui.make_fullscreen()
         
         print("="*80)
+        print("\n")
         print("🚀 SYSTEM READY! Camera feed starting...")
         print("🎮 CONTROLS:")
         print("   Q - Quit System")
@@ -42,6 +45,7 @@ def main():
         print("   R - Reset Statistics")
         print("="*80)
         
+        print("\n")
         # Show camera initialization loader
         print("📹 Initializing camera system...")
         ui.animated_loader(video_capture, "Initializing Camera...", 5.0, ui.COLORS['blue'])
@@ -159,11 +163,7 @@ def main():
         video_capture.release()
         cv2.destroyAllWindows()
         
-        print("\n" + "="*80)
-        print("🏁 SESSION COMPLETED")
         ui.print_session_stats(session_stats)
-        print("🙏 Thank you for using Advanced Face Recognition System!")
-        print("="*80)
     else:
         print("❌ Failed to prepare training data.")
         print("📝 Please check your Face_DB folder and ensure it contains valid image files.")

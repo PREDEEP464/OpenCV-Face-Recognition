@@ -33,6 +33,7 @@ def prepare_training_data():
         return None, None, None
     
     print(f"Found {len(image_files)} images in Face_DB folder:")
+    print("-" * 50)
     
     # Initialize face cascade
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -49,7 +50,7 @@ def prepare_training_data():
         
         # Get person name from filename (without extension)
         person_name = os.path.splitext(image_file)[0]
-        print(f"Processing {person_name}...")
+        print(f"⏳ Processing {person_name}...")
         
         # Convert to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -76,12 +77,14 @@ def prepare_training_data():
         labels.append(label_id)
         names.append(person_name)
         
-        print(f"Successfully processed {person_name} (Label: {label_id})")
+        print(f"✅ Successfully processed {person_name} (Label: {label_id})")
+        print("-" * 50)
         label_id += 1
     
     if not faces:
         print("No faces were successfully processed!")
         return None, None, None
     
-    print(f"Training data prepared successfully for {len(faces)} faces!")
+    print(f"⭐ Training data prepared successfully for {len(faces)} faces!")
+    
     return faces, labels, names
