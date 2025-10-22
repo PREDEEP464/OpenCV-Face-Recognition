@@ -109,8 +109,11 @@ def main():
                         name = "Unknown"
                         is_recognized = False
                     
+                    # Adjust confidence for display purposes
+                    display_confidence = max(0, confidence - 30) 
+                    
                     # Draw animated face box with all the fancy effects
-                    frame = ui.draw_animated_face_box(frame, x, y, w, h, name, confidence, is_recognized)
+                    frame = ui.draw_animated_face_box(frame, x, y, w, h, name, display_confidence, is_recognized)
             
             # Add enhanced UI with all animations
             frame = ui.add_enhanced_ui(frame, detected_count, recognized_count, len(names), session_stats, system_paused)
