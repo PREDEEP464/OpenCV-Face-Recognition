@@ -477,8 +477,11 @@ if faces is not None and labels is not None and names is not None:
                     name = "Unknown"
                     is_recognized = False
                 
+                # Adjust confidence for display purposes
+                display_confidence = max(0, confidence - 30)
+                
                 # Draw animated face box
-                frame = draw_animated_face_box(frame, x, y, w, h, name, confidence, is_recognized)
+                frame = draw_animated_face_box(frame, x, y, w, h, name, display_confidence, is_recognized)
         
         # Add enhanced UI
         frame = add_enhanced_ui(frame, detected_count, recognized_count, len(names))
