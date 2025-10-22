@@ -474,7 +474,7 @@ if faces is not None and labels is not None and names is not None:
                     # Add recognized name to session stats
                     session_stats['detected_names'].add(name)
                 else:
-                    name = "Unknown Person"
+                    name = "Unknown"
                     is_recognized = False
                 
                 # Draw animated face box

@@ -106,7 +106,7 @@ def main():
                         # Add recognized name to session stats
                         session_stats['detected_names'].add(name)
                     else:
-                        name = "Unknown Person"
+                        name = "Unknown"
                         is_recognized = False
                     
                     # Draw animated face box with all the fancy effects

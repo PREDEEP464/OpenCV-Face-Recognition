@@ -253,7 +253,7 @@ if confidence < 70 and label < len(names):  # Recognition threshold
     name = names[label]
     is_recognized = True
 else:
-    name = "Unknown Person"
+    name = "Unknown"
     is_recognized = False
 ```
 
