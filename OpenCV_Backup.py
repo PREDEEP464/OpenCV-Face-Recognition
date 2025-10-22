@@ -494,7 +494,7 @@ if faces is not None and labels is not None and names is not None:
         if key == ord('q'):
             print("\n🛑 Shutting down system...")
             # Show quit loader
-            animated_loader(video_capture, "Shutting Down...", 3.0, COLORS['red'])
+            animated_loader(video_capture, "Quitting System...", 3.0, COLORS['red'])
             break
         elif key == ord('f'):
             # Toggle fullscreen

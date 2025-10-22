@@ -126,7 +126,7 @@ def main():
             if key == ord('q'):
                 print("\n🛑 Shutting down system...")
                 # Show quit loader
-                ui.animated_loader(video_capture, "Shutting Down...", 3.0, ui.COLORS['red'])
+                ui.animated_loader(video_capture, "Quitting System...", 3.0, ui.COLORS['red'])
                 break
             elif key == ord('f'):
                 # Toggle fullscreen
