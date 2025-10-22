@@ -24,9 +24,10 @@ def main():
         print("✅ Training completed successfully!")
         print(f"👥 Trained on {len(names)} people: {', '.join(names)}")
         print("=" * 50)
-        print("🎥 Initializing camera system...")
+        print("\n")
         
         # Initialize video capture with better settings
+        print("📹 Initializing camera system...")
         video_capture = cv2.VideoCapture(0)
         video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -35,8 +36,11 @@ def main():
         # Create fullscreen window
         ui.make_fullscreen()
         
+        # Show camera initialization loader
+        ui.animated_loader(video_capture, "Initializing Camera...", 3.0, ui.COLORS['blue'])
+        print("✅ Camera initialization complete!")
+        
         print("="*80)
-        print("\n")
         print("🚀 SYSTEM READY! Camera feed starting...")
         print("🎮 CONTROLS:")
         print("   Q - Quit System")
@@ -44,12 +48,6 @@ def main():
         print("   P - Pause/Resume Recognition")
         print("   R - Reset Statistics")
         print("="*80)
-        
-        print("\n")
-        # Show camera initialization loader
-        print("📹 Initializing camera system...")
-        ui.animated_loader(video_capture, "Initializing Camera...", 5.0, ui.COLORS['blue'])
-        print("✅ Camera initialization complete!")
         
         # Initialize session stats and face cascade
         session_stats = {

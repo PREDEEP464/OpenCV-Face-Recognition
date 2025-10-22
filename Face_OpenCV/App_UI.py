@@ -43,7 +43,6 @@ def print_training_progress(current, total, name):
 def print_session_stats(session_stats):
     """Print enhanced session statistics"""
     session_time = time.time() - session_stats['session_start']
-    print("\n")
     print("📊 " + "="*25 + " SESSION SUMMARY " + "="*25 + " 📊")
     print(f"⏰ Session Duration: {session_time:.1f} seconds")
     if session_stats['detected_names']:
