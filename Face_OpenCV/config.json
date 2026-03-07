@@ -1,0 +1,34 @@
+{
+  "system": {
+    "version": "Review 2 - BMC Enhanced Recognition",
+    "description": "Simple BMC integration for improved face recognition"
+  },
+  
+  "bmc": {
+    "enabled": true,
+    "mode": "fast",
+    "strength": "light",
+    "description": "Bilateral Median Convolution for robust texture extraction. Light mode for compatibility with old training images."
+  },
+  
+  "camera": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30
+  },
+  
+  "recognition": {
+    "threshold": 70,
+    "confidence_adjustment": -42,
+    "description": "Lower confidence scores = better match"
+  },
+  
+  "review_3_features": {
+    "description": "Advanced features moved to Review_3_Advanced_Features folder",
+    "features": [
+      "Performance_Monitor.py - Real-time FPS and metrics tracking",
+      "Enhanced_Recognizer.py - Optimized LBPH with adaptive thresholds",
+      "Preprocessing.py - Advanced CLAHE and multi-filter preprocessing"
+    ]
+  }
+}

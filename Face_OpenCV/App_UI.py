@@ -146,7 +146,7 @@ def create_scanning_animation(frame, center_x, center_y, radius):
     
     return frame
 
-def add_enhanced_ui(frame, detected_count, recognized_count, total_trained, session_stats, system_paused):
+def add_enhanced_ui(frame, detected_count, recognized_count, total_trained, session_stats, system_paused, show_bmc_stats=False, bmc_stats=None):
     """Add enhanced UI with animations and better styling"""
     global animation_frame
     height, width = frame.shape[:2]
@@ -208,9 +208,67 @@ def add_enhanced_ui(frame, detected_count, recognized_count, total_trained, sess
     
     # Enhanced controls with colored keys
     controls_text = "Q:Quit | F:Fullscreen | P:Pause | R:Reset"
+    if bmc_stats is not None:
+        controls_text += " | T:BMC Stats"
     text_size = cv2.getTextSize(controls_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
     cv2.putText(frame, controls_text, (width - text_size[0] - 20, info_y + 25), 
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLORS['yellow'], 2)
+    
+    # BMC Statistics Panel (when toggled)
+    if show_bmc_stats and bmc_stats is not None:
+        panel_width = 350
+        panel_height = 180
+        panel_x = width - panel_width - 20
+        panel_y = 90
+        
+        # Draw semi-transparent background with animated border
+        overlay = frame.copy()
+        cv2.rectangle(overlay, (panel_x, panel_y), (panel_x + panel_width, panel_y + panel_height), (40, 40, 40), -1)
+        
+        # Animated glowing border
+        pulse = int((math.sin(animation_frame * 0.1) + 1) * 60 + 140)
+        border_color = (pulse, 200, pulse)
+        cv2.rectangle(overlay, (panel_x, panel_y), (panel_x + panel_width, panel_y + panel_height), border_color, 3)
+        
+        frame = cv2.addWeighted(overlay, 0.85, frame, 0.15, 0)
+        
+        # Title
+        title_pulse = int((math.sin(animation_frame * 0.12) + 1) * 40 + 180)
+        cv2.putText(frame, "BMC STATISTICS", (panel_x + 10, panel_y + 30), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (title_pulse, 255, title_pulse), 2)
+        
+        # Statistics
+        y_offset = panel_y + 60
+        line_spacing = 25
+        
+        # Total processed
+        cv2.putText(frame, f"Frames Processed: {bmc_stats['total_processed']}", 
+                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['white'], 1)
+        y_offset += line_spacing
+        
+        # Average processing time with color coding
+        avg_time = bmc_stats['avg_time_ms']
+        time_color = COLORS['green'] if avg_time < 10 else COLORS['yellow'] if avg_time < 20 else COLORS['red']
+        cv2.putText(frame, f"Avg Processing: {avg_time:.2f} ms", 
+                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, time_color, 1)
+        y_offset += line_spacing
+        
+        # Recognitions with BMC
+        cv2.putText(frame, f"BMC Recognitions: {bmc_stats['recognitions_with_bmc']}", 
+                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['light_blue'], 1)
+        y_offset += line_spacing
+        
+        # BMC Status
+        status_pulse = int((math.sin(animation_frame * 0.2) + 1) * 50 + 150)
+        cv2.putText(frame, "Status: ACTIVE (Light Mode)", 
+                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, status_pulse, 0), 1)
+        y_offset += line_spacing
+        
+        # Performance indicator
+        if bmc_stats['total_processed'] > 0:
+            fps_estimate = 1000 / avg_time if avg_time > 0 else 0
+            cv2.putText(frame, f"Est. Throughput: ~{fps_estimate:.0f} FPS", 
+                        (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.4, COLORS['yellow'], 1)
     
     return frame
 

@@ -2,11 +2,31 @@ import os
 import cv2
 import numpy as np
 
+# Review 2 Enhancement: BMC only
+try:
+    from BMC_Processor import BMCProcessor
+    BMC_AVAILABLE = True
+except ImportError:
+    BMC_AVAILABLE = False
+    print("⚠️ BMC not available, using standard preprocessing")
+
+
 def prepare_training_data():
-    """Prepare training data exactly like the original Face_OpenCV.py"""
+    """
+    Prepare training data with Review 2 enhancement
+    Applies BMC for robust feature learning
+    """
     faces = []
     labels = []
     names = []
+    
+    # Initialize BMC processor if available
+    bmc_processor = None
+    if BMC_AVAILABLE:
+        bmc_processor = BMCProcessor()
+        print("🚀 Review 2: BMC preprocessing ENABLED")
+    else:
+        print("📦 Using standard preprocessing")
     
     # Face database folder path - handle both running from Face_OpenCV folder and parent folder
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -72,6 +92,11 @@ def prepare_training_data():
         
         # Resize to standard size for better recognition
         face = cv2.resize(face, (200, 200))
+        
+        # Apply BMC enhancement if available (Review 2 enhancement - light mode)
+        if BMC_AVAILABLE and bmc_processor is not None:
+            face = bmc_processor.fast_bmc(face, strength='light')
+            print(f"   ⚡ Applied BMC preprocessing (light mode)")
         
         faces.append(face)
         labels.append(label_id)
