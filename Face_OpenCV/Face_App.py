@@ -56,7 +56,7 @@ def main():
         ui.make_fullscreen()
         
         # Show camera initialization loader
-        ui.animated_loader(video_capture, "Initializing Camera...", 3.0, ui.COLORS['blue'])
+        ui.animated_loader(video_capture, "Initializing Camera...", 3.0, ui.COLORS['electric_blue'])
         print("✅ Camera initialization complete!")
         
         print("="*80)
@@ -69,7 +69,7 @@ def main():
         print("   P - Pause/Resume Recognition")
         print("   R - Reset Statistics")
         if BMC_AVAILABLE:
-            print("   T - Toggle BMC Statistics")
+            print("   B - Toggle BMC Statistics")
         print("="*80)
         
         # Initialize session stats and face cascade
@@ -86,7 +86,9 @@ def main():
             'total_time': 0.0,
             'avg_time_ms': 0.0,
             'recognitions_with_bmc': 0,
-            'recognitions_without_bmc': 0
+            'actual_fps': 0.0,
+            'frame_times': [],
+            'last_time': time.time()
         }
         
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -98,6 +100,16 @@ def main():
             if not ret:
                 print("❌ Failed to capture frame from camera")
                 break
+            
+            # Calculate actual FPS
+            current_time = time.time()
+            frame_time = current_time - bmc_stats['last_time']
+            bmc_stats['last_time'] = current_time
+            bmc_stats['frame_times'].append(frame_time)
+            if len(bmc_stats['frame_times']) > 30:  # Keep last 30 frames
+                bmc_stats['frame_times'].pop(0)
+            avg_frame_time = sum(bmc_stats['frame_times']) / len(bmc_stats['frame_times'])
+            bmc_stats['actual_fps'] = 1.0 / avg_frame_time if avg_frame_time > 0 else 0
             
             # Flip frame for mirror effect
             frame = cv2.flip(frame, 1)
@@ -172,7 +184,7 @@ def main():
             if key == ord('q'):
                 print("\n🛑 Shutting down system...")
                 # Show quit loader
-                ui.animated_loader(video_capture, "Quitting System...", 3.0, ui.COLORS['red'])
+                ui.animated_loader(video_capture, "Quitting System...", 3.0, ui.COLORS['red_alert'])
                 break
             elif key == ord('f'):
                 # Toggle fullscreen
@@ -190,13 +202,13 @@ def main():
                     system_paused = True
                 else:
                     print("▶️  Resuming system...")
-                    ui.animated_loader(video_capture, "Resuming System...", 2.0, ui.COLORS['green'])
+                    ui.animated_loader(video_capture, "Resuming System...", 2.0, ui.COLORS['neon_green'])
                     system_paused = False
                     print("▶️  System RESUMED - Recognition active")
             elif key == ord('r'):
                 # Reset statistics with loader
                 print("🔄 Resetting statistics...")
-                ui.animated_loader(video_capture, "Resetting System...", 5.0, ui.COLORS['purple'])
+                ui.animated_loader(video_capture, "Resetting System...", 5.0, ui.COLORS['neon_purple'])
                 session_stats['detected_names'].clear()
                 session_stats['last_reset'] = time.time()
                 if BMC_AVAILABLE:
@@ -204,8 +216,10 @@ def main():
                     bmc_stats['total_time'] = 0.0
                     bmc_stats['avg_time_ms'] = 0.0
                     bmc_stats['recognitions_with_bmc'] = 0
+                    bmc_stats['frame_times'] = []
+                    bmc_stats['actual_fps'] = 0.0
                 print("🔄 Statistics RESET - Names list cleared")
-            elif key == ord('t') and BMC_AVAILABLE:
+            elif key == ord('b') and BMC_AVAILABLE:
                 # Toggle BMC statistics display
                 show_bmc_stats = not show_bmc_stats
                 if show_bmc_stats:

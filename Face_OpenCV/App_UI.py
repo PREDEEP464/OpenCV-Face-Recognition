@@ -4,24 +4,27 @@ import numpy as np
 import math
 from datetime import datetime
 
-# Enhanced UI colors with more vibrant palette
+# Modern Cyberpunk Color Palette (Review 2 Theme)
 COLORS = {
-    'green': (0, 255, 0),      # Recognized faces
-    'red': (0, 0, 255),        # Unknown faces
-    'blue': (255, 140, 0),     # UI elements - Deep Sky Blue
-    'white': (255, 255, 255),  # Text
-    'yellow': (0, 255, 255),   # Highlights - Cyan
-    'purple': (255, 0, 255),   # Magenta for special effects
-    'orange': (0, 165, 255),   # Orange for warnings
-    'dark_gray': (40, 40, 40), # Background
-    'light_blue': (255, 200, 100), # Light blue for accents
+    'neon_cyan': (180, 120, 0),      # Dark blue-cyan for primary elements (was bright cyan)
+    'neon_pink': (255, 20, 147),     # Hot pink for recognized faces
+    'neon_purple': (255, 0, 128),    # Purple for special effects
+    'neon_green': (57, 255, 20),     # Lime green for success
+    'neon_orange': (0, 140, 255),    # Orange for warnings
+    'electric_blue': (180, 120, 0),  # Dark blue (was bright)
+    'deep_purple': (128, 0, 128),    # Deep purple backgrounds
+    'dark_bg': (15, 15, 25),         # Very dark background
+    'gray_panel': (35, 35, 50),      # Panel background
+    'white': (255, 255, 255),        # Pure white text
+    'red_alert': (60, 60, 255),      # Red for unknown
+    'gold': (0, 215, 255),           # Gold for highlights
 }
 
-WINDOW_NAME = '🎯 Advanced Face Recognition System'
+WINDOW_NAME = '🎯 Face Recognition System'
 
 # Global animation variables
 animation_frame = 0
-scanning_animation = 0
+pulse_counter = 0
 
 def print_fancy_header():
     """Print an enhanced terminal header with emojis and styling"""
@@ -147,218 +150,286 @@ def create_scanning_animation(frame, center_x, center_y, radius):
     return frame
 
 def add_enhanced_ui(frame, detected_count, recognized_count, total_trained, session_stats, system_paused, show_bmc_stats=False, bmc_stats=None):
-    """Add enhanced UI with animations and better styling"""
-    global animation_frame
+    """Optimized UI with better performance"""
+    global animation_frame, pulse_counter
     height, width = frame.shape[:2]
     animation_frame += 1
+    pulse_counter += 0.05  # Reduced from 0.08 for less animation overhead
     
-    # Animated top bar with gradient effect
-    for i in range(70):
-        alpha = (math.sin(animation_frame * 0.05) + 1) * 0.1 + 0.3
-        color_intensity = int(40 + alpha * 20)
-        cv2.line(frame, (0, i), (width, i), (color_intensity, color_intensity, color_intensity), 1)
+    # === LEFT SIDE PANEL (Simplified for performance) ===
+    panel_w = 320
+    panel_h = 200
+    panel_x = 15
+    panel_y = 15
     
-    # System status indicator with pulsing effect
+    # Solid panel (no overlay for performance)
+    cv2.rectangle(frame, (panel_x, panel_y), (panel_x + panel_w, panel_y + panel_h), COLORS['gray_panel'], -1)
+    cv2.rectangle(frame, (panel_x, panel_y), (panel_x + panel_w, panel_y + panel_h), COLORS['neon_cyan'], 2)
+    
+    # Simple corner accents (reduced from 5px to 3px)
+    accent_len = 25
+    cv2.line(frame, (panel_x, panel_y), (panel_x + accent_len, panel_y), COLORS['neon_cyan'], 3)
+    cv2.line(frame, (panel_x, panel_y), (panel_x, panel_y + accent_len), COLORS['neon_cyan'], 3)
+    cv2.line(frame, (panel_x + panel_w, panel_y), (panel_x + panel_w - accent_len, panel_y), COLORS['neon_cyan'], 3)
+    cv2.line(frame, (panel_x + panel_w, panel_y), (panel_x + panel_w, panel_y + accent_len), COLORS['neon_cyan'], 3)
+    
+    # Title with glow effect
     if system_paused:
-        pulse = int((math.sin(animation_frame * 0.2) + 1) * 50 + 100)
-        status_color = (0, pulse, pulse)
-        status_text = "SYSTEM PAUSED"
-        cv2.putText(frame, status_text, (width//2 - 100, 35), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, status_color, 3)
-    else:
-        # Active system with animated title
-        pulse = int((math.sin(animation_frame * 0.1) + 1) * 30 + 200)
-        title_color = (pulse, 255, pulse)
-        cv2.putText(frame, "Face Recognition System", (20, 35), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, title_color, 3)
+        # Large centered paused message with styled background
+        pause_w = 400
+        pause_h = 100
+        pause_x = (width - pause_w) // 2
+        pause_y = (height - pause_h) // 2
         
-        # Scanning indicator
-        if detected_count == 0:
-            scan_text = "Scanning..."
-            scan_pulse = int((math.sin(animation_frame * 0.3) + 1) * 100 + 100)
-            cv2.putText(frame, scan_text, (20, 65), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (scan_pulse, scan_pulse, 255), 2)
+        # Direct drawing - no overlay blending
+        cv2.rectangle(frame, (pause_x, pause_y), (pause_x + pause_w, pause_y + pause_h), COLORS['gray_panel'], -1)
+        
+        # Animated red border
+        pause_pulse = int((math.sin(pulse_counter * 2) + 1) * 80 + 120)
+        pause_border = (60, 60, pause_pulse)
+        cv2.rectangle(frame, (pause_x, pause_y), (pause_x + pause_w, pause_y + pause_h), pause_border, 4)
+        
+        # Paused text
+        cv2.putText(frame, "SYSTEM PAUSED", (pause_x + 40, pause_y + 60), 
+                    cv2.FONT_HERSHEY_DUPLEX, 1.2, (pause_pulse, pause_pulse, 255), 3)
+        
+        # Show in panel too
+        title = "PAUSED"
+        title_color = (pause_pulse, pause_pulse, 255)
+    else:
+        title = "FACE RECOGNITION"
+        title_color = COLORS['neon_cyan']
     
-    # Current time with enhanced styling
-    current_time = datetime.now().strftime("%H:%M:%S")
-    cv2.putText(frame, current_time, (width - 150, 35), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['white'], 2)
+    cv2.putText(frame, title, (panel_x + 15, panel_y + 30), 
+                cv2.FONT_HERSHEY_DUPLEX, 0.6, title_color, 2)
     
-    # Enhanced bottom info bar with animations
-    info_y = height - 80
-    for i in range(80):
-        alpha = 0.6 + (math.sin(animation_frame * 0.03 + i * 0.1) + 1) * 0.1
-        color_intensity = int(30 + alpha * 20)
-        cv2.line(frame, (0, info_y + i), (width, info_y + i), (color_intensity, color_intensity, color_intensity), 1)
+    # Divider line
+    cv2.line(frame, (panel_x + 10, panel_y + 45), (panel_x + panel_w - 10, panel_y + 45), COLORS['neon_cyan'], 1)
     
-    # Statistics with current session info
-    stats_line1 = f"Trained: {total_trained} | Currently Detected: {detected_count} | Currently Recognized: {recognized_count}"
-    cv2.putText(frame, stats_line1, (20, info_y + 25), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLORS['white'], 2)
+    # Statistics with icons
+    stat_y = panel_y + 70
+    line_h = 30
     
-    # Session stats
-    session_time = time.time() - session_stats['session_start']
+    # Trained count
+    cv2.putText(frame, f"TRAINED: {total_trained}", (panel_x + 20, stat_y), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['neon_green'], 1)
+    
+    # Detected count with color coding
+    detect_color = COLORS['neon_pink'] if detected_count > 0 else COLORS['white']
+    cv2.putText(frame, f"DETECTED: {detected_count}", (panel_x + 20, stat_y + line_h), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, detect_color, 1)
+    
+    # Recognized count
+    recog_color = COLORS['neon_green'] if recognized_count > 0 else COLORS['white']
+    cv2.putText(frame, f"RECOGNIZED: {recognized_count}", (panel_x + 20, stat_y + line_h*2), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, recog_color, 1)
+    
+    # Session people
     if session_stats['detected_names']:
-        names_text = f"Session People: {', '.join(sorted(session_stats['detected_names']))}"
+        people_text = f"PEOPLE: {', '.join(list(session_stats['detected_names'])[:2])}"
+        if len(session_stats['detected_names']) > 2:
+            people_text += "..."
     else:
-        names_text = "Session People: None detected yet"
+        people_text = "PEOPLE: Scanning..."
+    cv2.putText(frame, people_text, (panel_x + 20, stat_y + line_h*3), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, COLORS['electric_blue'], 1)
     
-    cv2.putText(frame, names_text, (20, info_y + 50), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['light_blue'], 1)
+    # === TOP RIGHT - Time and Status ===
+    time_text = datetime.now().strftime("%H:%M:%S")
+    time_size = cv2.getTextSize(time_text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
+    time_x = width - time_size[0] - 20
+    time_y = 40
+    # Shadow effect
+    cv2.putText(frame, time_text, (time_x + 2, time_y + 2), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (40, 40, 40), 2)
+    # Grey-whitish color
+    cv2.putText(frame, time_text, (time_x, time_y), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (210, 210, 210), 2)
     
-    # Enhanced controls with colored keys
-    controls_text = "Q:Quit | F:Fullscreen | P:Pause | R:Reset"
+    # Scanning animation
+    if not system_paused and detected_count == 0:
+        scan_pulse = int((math.sin(pulse_counter * 3) + 1) * 100 + 100)
+        cv2.putText(frame, "[SCANNING...]", (width - 200, 70), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (scan_pulse, scan_pulse, 255), 1)
+    
+    # === BOTTOM CONTROLS BAR ===
+    bar_h = 50
+    bar_y = height - bar_h
+    
+    # Direct drawing - no overlay blending
+    cv2.rectangle(frame, (0, bar_y), (width, height), COLORS['dark_bg'], -1)
+    cv2.line(frame, (0, bar_y), (width, bar_y), COLORS['neon_cyan'], 2)
+    
+    # Controls
+    controls = [
+        ("Q", "QUIT", COLORS['red_alert']),
+        ("F", "FULL", COLORS['electric_blue']),
+        ("P", "PAUSE", COLORS['neon_orange']),
+        ("R", "RESET", COLORS['neon_purple'])
+    ]
     if bmc_stats is not None:
-        controls_text += " | T:BMC Stats"
-    text_size = cv2.getTextSize(controls_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-    cv2.putText(frame, controls_text, (width - text_size[0] - 20, info_y + 25), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLORS['yellow'], 2)
+        controls.append(("B", "BMC", COLORS['neon_green']))
     
-    # BMC Statistics Panel (when toggled)
+    x_offset = 30
+    for key, label, color in controls:
+        # Key button
+        cv2.rectangle(frame, (x_offset, bar_y + 10), (x_offset + 30, bar_y + 35), color, 2)
+        cv2.putText(frame, key, (x_offset + 8, bar_y + 28), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        # Label
+        cv2.putText(frame, label, (x_offset + 35, bar_y + 28), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, COLORS['white'], 1)
+        x_offset += 120
+    
+    # === BMC STATISTICS PANEL (Bottom Right Corner) ===
     if show_bmc_stats and bmc_stats is not None:
-        panel_width = 350
-        panel_height = 180
-        panel_x = width - panel_width - 20
-        panel_y = 90
+        bmc_w = 320
+        bmc_h = 235
+        bmc_x = width - bmc_w - 15
+        bmc_y = height - bmc_h - bar_h - 15  # Position above bottom bar
         
-        # Draw semi-transparent background with animated border
-        overlay = frame.copy()
-        cv2.rectangle(overlay, (panel_x, panel_y), (panel_x + panel_width, panel_y + panel_height), (40, 40, 40), -1)
+        # Futuristic panel with neon green border - direct drawing
+        cv2.rectangle(frame, (bmc_x, bmc_y), (bmc_x + bmc_w, bmc_y + bmc_h), COLORS['gray_panel'], -1)
         
-        # Animated glowing border
-        pulse = int((math.sin(animation_frame * 0.1) + 1) * 60 + 140)
-        border_color = (pulse, 200, pulse)
-        cv2.rectangle(overlay, (panel_x, panel_y), (panel_x + panel_width, panel_y + panel_height), border_color, 3)
+        # Animated green/cyan border
+        bmc_pulse = int((math.sin(pulse_counter * 1.5) + 1) * 60 + 140)
+        bmc_border = (bmc_pulse, 255, bmc_pulse)
+        cv2.rectangle(frame, (bmc_x, bmc_y), (bmc_x + bmc_w, bmc_y + bmc_h), bmc_border, 3)
         
-        frame = cv2.addWeighted(overlay, 0.85, frame, 0.15, 0)
+        # Diagonal accent lines
+        for i in range(0, bmc_w, 40):
+            line_alpha = 100 + int((math.sin(pulse_counter + i * 0.1) + 1) * 30)
+            cv2.line(frame, (bmc_x + i, bmc_y), (bmc_x + i + 20, bmc_y + 20), (0, line_alpha, line_alpha), 1)
         
         # Title
-        title_pulse = int((math.sin(animation_frame * 0.12) + 1) * 40 + 180)
-        cv2.putText(frame, "BMC STATISTICS", (panel_x + 10, panel_y + 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (title_pulse, 255, title_pulse), 2)
+        cv2.putText(frame, "BMC ANALYTICS", (bmc_x + 15, bmc_y + 30), 
+                    cv2.FONT_HERSHEY_DUPLEX, 0.6, COLORS['neon_green'], 2)
+        cv2.line(frame, (bmc_x + 10, bmc_y + 40), (bmc_x + bmc_w - 10, bmc_y + 40), COLORS['neon_green'], 1)
         
-        # Statistics
-        y_offset = panel_y + 60
-        line_spacing = 25
+        # Metrics
+        metric_y = bmc_y + 62
+        metric_spacing = 26
         
-        # Total processed
-        cv2.putText(frame, f"Frames Processed: {bmc_stats['total_processed']}", 
-                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['white'], 1)
-        y_offset += line_spacing
+        # Frames processed
+        frames_count = bmc_stats['total_processed']
+        cv2.putText(frame, f"Frames Processed: {frames_count}", (bmc_x + 20, metric_y), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.43, COLORS['white'], 1)
         
-        # Average processing time with color coding
+        # Processing time with color coding
         avg_time = bmc_stats['avg_time_ms']
-        time_color = COLORS['green'] if avg_time < 10 else COLORS['yellow'] if avg_time < 20 else COLORS['red']
-        cv2.putText(frame, f"Avg Processing: {avg_time:.2f} ms", 
-                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, time_color, 1)
-        y_offset += line_spacing
+        if avg_time < 10:
+            time_color = COLORS['neon_green']
+            status_text = "GREEN"
+        elif avg_time < 20:
+            time_color = COLORS['neon_orange']
+            status_text = "YELLOW"
+        else:
+            time_color = COLORS['red_alert']
+            status_text = "RED"
         
-        # Recognitions with BMC
-        cv2.putText(frame, f"BMC Recognitions: {bmc_stats['recognitions_with_bmc']}", 
-                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['light_blue'], 1)
-        y_offset += line_spacing
+        cv2.putText(frame, f"Avg Processing: {avg_time:.2f} ms", (bmc_x + 20, metric_y + metric_spacing), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.43, time_color, 1)
+        cv2.putText(frame, f"[{status_text}]", (bmc_x + 230, metric_y + metric_spacing), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.38, time_color, 1)
         
-        # BMC Status
-        status_pulse = int((math.sin(animation_frame * 0.2) + 1) * 50 + 150)
-        cv2.putText(frame, "Status: ACTIVE (Light Mode)", 
-                    (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, status_pulse, 0), 1)
-        y_offset += line_spacing
+        # BMC Recognition count
+        bmc_recs = bmc_stats['recognitions_with_bmc']
+        cv2.putText(frame, f"BMC Recognitions: {bmc_recs}", (bmc_x + 20, metric_y + metric_spacing*2), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.43, COLORS['neon_green'], 1)
         
-        # Performance indicator
-        if bmc_stats['total_processed'] > 0:
-            fps_estimate = 1000 / avg_time if avg_time > 0 else 0
-            cv2.putText(frame, f"Est. Throughput: ~{fps_estimate:.0f} FPS", 
-                        (panel_x + 15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.4, COLORS['yellow'], 1)
+        # Status with pulsing indicator
+        status_pulse = int((math.sin(pulse_counter * 2) + 1) * 50 + 150)
+        cv2.circle(frame, (bmc_x + 20, metric_y + metric_spacing*3 - 3), 5, (0, status_pulse, 0), -1)
+        cv2.putText(frame, "Status: ACTIVE (Light Mode)", (bmc_x + 32, metric_y + metric_spacing*3), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.43, COLORS['neon_green'], 1)
+        
+        # Est. Throughput
+        if avg_time > 0:
+            throughput = 1000.0 / avg_time
+            cv2.putText(frame, f"Est. Throughput: ~{throughput:.0f} FPS", (bmc_x + 20, metric_y + metric_spacing*4), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.43, COLORS['electric_blue'], 1)
+        
+        # Enhancement percentage
+        enhancement_pct = 0
+        if frames_count > 0:
+            enhancement_pct = (bmc_recs / frames_count) * 100
+        
+        enh_color = COLORS['neon_green'] if enhancement_pct > 50 else COLORS['neon_orange'] if enhancement_pct > 25 else COLORS['white']
+        cv2.putText(frame, f"Output Enhanced: {enhancement_pct:.1f}%", (bmc_x + 20, metric_y + metric_spacing*5), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.43, enh_color, 1)
+        
+        # System FPS (smaller, at bottom)
+        actual_fps = bmc_stats.get('actual_fps', 0)
+        fps_color = COLORS['neon_green'] if actual_fps > 20 else COLORS['neon_orange'] if actual_fps > 15 else COLORS['red_alert']
+        cv2.putText(frame, f"System FPS: {actual_fps:.1f}", (bmc_x + 20, metric_y + metric_spacing*6), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.38, fps_color, 1)
     
     return frame
 
 def draw_animated_face_box(frame, x, y, w, h, name, confidence, is_recognized):
-    """Draw animated face detection box with enhanced effects"""
-    global animation_frame
+    """Simple clean face box with professional appearance"""
+    global pulse_counter
     
-    # Choose color and create pulsing effect
+    # Color selection
     if is_recognized:
-        pulse = int((math.sin(animation_frame * 0.15) + 1) * 30 + 200)
-        color = (0, pulse, 0)
-        accent_color = COLORS['green']
+        box_color = COLORS['neon_green']
+        name_bg_color = (0, 180, 0)  # Dark green
     else:
-        pulse = int((math.sin(animation_frame * 0.2) + 1) * 50 + 150)
-        color = (0, 0, pulse)
-        accent_color = COLORS['red']
+        box_color = COLORS['red_alert']
+        name_bg_color = (0, 0, 180)  # Dark red
     
-    # Main rectangle with animated thickness
-    thickness = int((math.sin(animation_frame * 0.1) + 1) * 2 + 2)
-    cv2.rectangle(frame, (x, y), (x+w, y+h), color, thickness)
+    # Simple bounding box - clean outline only
+    thickness = 2
+    cv2.rectangle(frame, (x, y), (x+w, y+h), box_color, thickness)
     
-    # Animated corner accents
-    corner_length = int(25 + (math.sin(animation_frame * 0.12) + 1) * 5)
-    corner_thickness = 5
+    # Name label (simple rectangle above face)
+    name_text = name.upper()
+    text_size = cv2.getTextSize(name_text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
     
-    # Glowing corner effects
-    for offset in range(3):
-        alpha = 1 - (offset * 0.3)
-        glow_color = tuple(int(c * alpha) for c in accent_color)
-        
-        # Top-left corner
-        cv2.line(frame, (x-offset, y-offset), (x + corner_length + offset, y-offset), glow_color, corner_thickness-offset)
-        cv2.line(frame, (x-offset, y-offset), (x-offset, y + corner_length + offset), glow_color, corner_thickness-offset)
-        
-        # Top-right corner
-        cv2.line(frame, (x + w + offset, y-offset), (x + w - corner_length - offset, y-offset), glow_color, corner_thickness-offset)
-        cv2.line(frame, (x + w + offset, y-offset), (x + w + offset, y + corner_length + offset), glow_color, corner_thickness-offset)
-        
-        # Bottom-left corner
-        cv2.line(frame, (x-offset, y + h + offset), (x + corner_length + offset, y + h + offset), glow_color, corner_thickness-offset)
-        cv2.line(frame, (x-offset, y + h + offset), (x-offset, y + h - corner_length - offset), glow_color, corner_thickness-offset)
-        
-        # Bottom-right corner
-        cv2.line(frame, (x + w + offset, y + h + offset), (x + w - corner_length - offset, y + h + offset), glow_color, corner_thickness-offset)
-        cv2.line(frame, (x + w + offset, y + h + offset), (x + w + offset, y + h - corner_length - offset), glow_color, corner_thickness-offset)
+    label_y = max(y - 35, 10)
+    label_w = text_size[0] + 20
+    label_h = 30
+    label_x = x
     
-    # Enhanced name label with glow effect
-    label_text = f"{name.upper()}"
-    text_size = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+    # Simple solid background
+    cv2.rectangle(frame, (label_x, label_y), (label_x + label_w, label_y + label_h), name_bg_color, -1)
+    cv2.rectangle(frame, (label_x, label_y), (label_x + label_w, label_y + label_h), box_color, 2)
     
-    # Position label above the face box
-    label_y = max(y - 50, 10)
-    label_width = text_size[0] + 30
+    # Name text
+    cv2.putText(frame, name_text, (label_x + 10, label_y + 21), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLORS['white'], 2)
     
-    # Animated background with gradient
-    for i in range(40):
-        alpha = 1 - (i / 40) * 0.5
-        bg_color = tuple(int(c * alpha) for c in accent_color)
-        cv2.rectangle(frame, (x-5, label_y + i), (x + label_width + 5, label_y + i + 1), bg_color, -1)
-    
-    # Add glowing text effect
-    for offset in [(2,2), (1,1), (0,0)]:
-        text_color = COLORS['white'] if offset == (0,0) else tuple(int(c * 0.5) for c in accent_color)
-        cv2.putText(frame, label_text, (x + 10 + offset[0], label_y + 25 + offset[1]), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, text_color, 2)
-    
-    # Animated confidence meter
+    # Confidence bar (clean horizontal bar)
     if is_recognized:
-        # Confidence bar
-        bar_width = w
-        bar_height = 8
-        confidence_ratio = max(0, (100 - confidence) / 100)  # Invert confidence for visual appeal
+        bar_y = y + h + 10
+        bar_w = w
+        bar_h = 10
         
         # Background bar
-        cv2.rectangle(frame, (x, y + h + 10), (x + bar_width, y + h + 10 + bar_height), COLORS['dark_gray'], -1)
+        cv2.rectangle(frame, (x, bar_y), (x + bar_w, bar_y + bar_h), (40, 40, 40), -1)
+        cv2.rectangle(frame, (x, bar_y), (x + bar_w, bar_y + bar_h), box_color, 1)
         
-        # Animated confidence fill
-        fill_width = int(bar_width * confidence_ratio)
+        # Fill based on confidence (inverted - lower is better)
+        confidence_ratio = max(0, (100 - confidence) / 100)
+        fill_w = int(bar_w * confidence_ratio)
+        
+        # Gradient color based on quality
         if confidence_ratio > 0.7:
-            bar_color = COLORS['green']
-        elif confidence_ratio > 0.4:
-            bar_color = COLORS['yellow']
+            fill_color = (0, 200, 0)  # Green
+        elif confidence_ratio > 0.5:
+            fill_color = (0, 200, 200)  # Yellow-green
+        elif confidence_ratio > 0.3:
+            fill_color = (0, 150, 255)  # Orange
         else:
-            bar_color = COLORS['orange']
-            
-        cv2.rectangle(frame, (x, y + h + 10), (x + fill_width, y + h + 10 + bar_height), bar_color, -1)
+            fill_color = (0, 0, 200)  # Red
         
-        # Confidence text
+        # Draw filled portion
+        if fill_w > 0:
+            cv2.rectangle(frame, (x, bar_y), (x + fill_w, bar_y + bar_h), fill_color, -1)
+        
+        # Confidence score text
         conf_text = f"Confidence: {confidence:.1f}"
-        cv2.putText(frame, conf_text, (x, y + h + 35), 
+        cv2.putText(frame, conf_text, (x, bar_y + bar_h + 18), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS['white'], 1)
     
     return frame
